@@ -1,10 +1,10 @@
-from flask import Flask, request, redirect, render_template, session, flash
-from mysqlconnection import MySQLConnector
-from sqlalchemy import exc
 import re
 import md5
 import os
 import binascii
+from flask import Flask, request, redirect, render_template, session, flash
+from mysqlconnection import MySQLConnector
+from sqlalchemy import exc
 
 app = Flask(__name__)
 app.secret_key = "supersecret"
@@ -39,6 +39,13 @@ def login():
             return redirect('/wall')
     else:
         return redirect('/')
+
+
+@app.route('/logout')
+def logout():
+    """Clear session."""
+    session.clear()
+    return redirect('/')
 
 
 @app.route('/register', methods=['POST'])
@@ -84,8 +91,8 @@ def wall():
     messages and comment on existing messages. Message comments are also
     displayed in descending chron order.
     """
-    comments = mysql.query_db('SELECT comments.comment, comments.created_at, comments.updated_at, comments.messages_id, users.name FROM comments JOIN users ON users.id = comments.users_id;')
-    messages = mysql.query_db('SELECT users.name, messages.id, messages.message, messages.created_at, messages.updated_at FROM messages JOIN users ON messages.users_id = users.id;')
+    comments = mysql.query_db('SELECT comments.comment, comments.created_at, comments.updated_at, comments.messages_id, users.name FROM comments JOIN users ON users.id = comments.users_id ORDER BY comments.created_at ASC;')
+    messages = mysql.query_db('SELECT users.name, messages.id, messages.message, messages.created_at, messages.updated_at FROM messages JOIN users ON messages.users_id = users.id ORDER BY messages.created_at DESC;')
     comments_dict = {message['id']: [comment for comment in comments if comment['messages_id'] == message['id']] for message in messages}
     return render_template('wall.html', messages=messages, comments=comments_dict)
 
@@ -105,7 +112,7 @@ def post():
 
 
 @app.route('/comment', methods=['POST'])
-def comment():
+def make_comment():
     """Comment on an existing message."""
     comment = request.form['comment']
     messages_id = request.form['messages_id']
