@@ -15,6 +15,12 @@
         <h2>{{message['name']}}</h2>
         <p>{{message['message']}}</p>
         <i>{{message['created_at']}}</i>
+        {% for comment in comments[message['id']]: %}
+            {% if message['id'] == comment['messages_id'] %}
+                <h3>{{ comment['name'] }}</h3>
+                <p>{{ comment['comment'] }}</p>
+            {% endif %}
+        {% endfor %}
         <form action="/comment" method="post">
             <input type="hidden" name="messages_id" value={{"%s"|format(message['id'])}}>
             <textarea name="comment" id="comment_input_box" placeholder="Leave a comment" cols="15" rows="5"></textarea>
