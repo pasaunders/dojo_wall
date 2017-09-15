@@ -84,8 +84,10 @@ def wall():
     messages and comment on existing messages. Message comments are also
     displayed in descending chron order.
     """
+    comments = mysql.query_db('SELECT comments.comment, comments.created_at, comments.updated_at, comments.messages_id, users.name FROM comments JOIN users ON users.id = comments.users_id;')
     messages = mysql.query_db('SELECT users.name, messages.id, messages.message, messages.created_at, messages.updated_at FROM messages JOIN users ON messages.users_id = users.id;')
-    return render_template('wall.html', messages=messages)
+    comments_dict = {message['id']: [comment for comment in comments if comment['messages_id'] == message['id']] for message in messages}
+    return render_template('wall.html', messages=messages, comments=comments_dict)
 
 
 @app.route('/post', methods=['POST'])
@@ -102,12 +104,10 @@ def post():
     return redirect('/wall')
 
 
-
 @app.route('/comment', methods=['POST'])
 def comment():
     """Comment on an existing message."""
     comment = request.form['comment']
-    import pdb; pdb.set_trace()
     messages_id = request.form['messages_id']
     if len(comment) > 0:
         query = "INSERT INTO comments (users_id, messages_id, comment, created_at, updated_at) VALUES (:user_id, :messages_id, :comment, NOW(), NOW())"
