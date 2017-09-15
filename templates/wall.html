@@ -5,6 +5,22 @@
     <title>Document</title>
 </head>
 <body>
-    
+    <h1>The Wall</h1>
+    <hr>
+    <form action="/post" method="post">
+        <textarea name="message" id="message_input_box" placeholder="Post a message" cols="30" rows="10"></textarea>
+        <input type="submit" value="submit">
+    </form>
+    {% for message in messages: %}
+        <h2>{{message['name']}}</h2>
+        <p>{{message['message']}}</p>
+        <i>{{message['created_at']}}</i>
+        <form action="/comment" method="post">
+            <input type="hidden" name="messages_id" value={{"%s"|format(message['id'])}}>
+            <textarea name="comment" id="comment_input_box" placeholder="Leave a comment" cols="15" rows="5"></textarea>
+            <input type="submit" value="submit">
+            <hr>
+        </form>
+    {% endfor %}
 </body>
 </html>
